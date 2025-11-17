@@ -13,25 +13,17 @@ name: Delete untagged and/or unsupported Docker images on ghcr.io
 # https://docs.github.com/en/actions/using-workflows/reusing-workflows
 
 on:
-  # Run on every saturday at 10:15 AM UTC
-  schedule:
-    - cron: '15 10 * * SAT'
-  # on button click
-  workflow_dispatch:
-    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_dispatchinputs
-    inputs:
-      tags:
-        description: Spare unsupported tags (whitespace-separated)
-        required: false
-        type: string
-  # or on calling as reusable workflow
+  # Allows this workflow to be called by other workflows
+  # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
   workflow_call:
-    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
     inputs:
       tags:
-        description: Spare unsupported tags (whitespace-separated)
+        description: "Spare unsupported tags (whitespace-separated)"
         required: false
         type: string
+    secrets:
+      GH_TOKEN:
+        required: true
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -164,6 +156,8 @@ jobs:
 
           # Passing env variable between steps
           echo "digest_keys=${DIGEST_KEYS}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Delete package versions
       # https://github.com/actions/delete-package-versions
@@ -178,7 +172,7 @@ jobs:
           package-type: 'container'
           delete-only-untagged-versions: 'true'
           ignore-versions: '${{ steps.untagged.outputs.digest_keys }}'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       -
         name: Compile unsupported versions/releases to delete
@@ -324,7 +318,7 @@ jobs:
           # Passing env variable between steps
           echo "version_ids=${UNIQSTR}" >> "$GITHUB_OUTPUT"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       -
         name: Delete multiple specific Docker images on ghcr.io
@@ -337,4 +331,4 @@ jobs:
           package-name:
             '${{ matrix.image }}'
           package-type: 'container'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
