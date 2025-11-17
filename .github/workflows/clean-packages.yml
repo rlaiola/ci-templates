@@ -14,8 +14,8 @@ name: Delete untagged and/or unsupported Docker images on ghcr.io
 
 on:
   # Allows this workflow to be called by other workflows
-  # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
   workflow_call:
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
     inputs:
       tags:
         description: "Spare unsupported tags (whitespace-separated)"
