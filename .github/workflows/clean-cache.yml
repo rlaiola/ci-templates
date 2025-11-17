@@ -28,8 +28,6 @@ on:
         required: true
 
 env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY_HOST: ghcr.io
   # Use github.repository (<account>/<repo>)
   REPOSITORY_NAME: ${{ inputs.repository || github.repository }}
 
