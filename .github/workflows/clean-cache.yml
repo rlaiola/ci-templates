@@ -9,8 +9,12 @@ name: Delete GitHub Actions cache for repository
 # GitHub Actions Documentation
 # https://docs.github.com/en/github-ae@latest/actions
 
+# Reusing workflows
+# https://docs.github.com/en/actions/using-workflows/reusing-workflows
+
 on:
   # Allows this workflow to be called by other workflows
+  # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
   workflow_call:
     inputs:
       repository:
