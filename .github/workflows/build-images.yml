@@ -212,7 +212,7 @@ jobs:
             org.opencontainers.image.title=${{ matrix.image }}
 
             org.opencontainers.image.description=A multi-platform/arch
-            image of the ${{ REPOSITORY_NAME }} project
+            image of the ${{ env.REPOSITORY_NAME }} project
 
             org.opencontainers.image.url=${{ steps.setup.outputs.image_name }}
 
@@ -387,7 +387,7 @@ jobs:
             org.opencontainers.image.title=${{ matrix.image }}
 
             org.opencontainers.image.description=A multi-platform/arch
-            image of the ${{ REPOSITORY_NAME }} project
+            image of the ${{ env.REPOSITORY_NAME }} project
 
             org.opencontainers.image.url=${{ steps.setup.outputs.image_name }}
 
