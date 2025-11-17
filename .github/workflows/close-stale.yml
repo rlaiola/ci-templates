@@ -9,24 +9,70 @@ name: Close stale issues and PRs
 # GitHub Actions Documentation
 # https://docs.github.com/en/github-ae@latest/actions
 
+# Reusing workflows
+# https://docs.github.com/en/actions/using-workflows/reusing-workflows
+
 on:
+  # Run daily at 6:30 PM UTC
   schedule:
-    # Run daily at 6:30 PM UTC
     - cron: '30 18 * * *'
-  # or on button click
+  # on button click
   workflow_dispatch:
+  # or allow this workflow to be called by other workflows
+  workflow_call:
+    inputs:
+      stale_issue_label:
+        description: "Label to mark issues and PRs as stale"
+        required: false
+        type: string
+        default: "stale"
+      stale_pr_label:
+        description: "Label to mark PRs as stale"
+        required: false
+        type: string
+        default: "stale"
+      days_before_stale:
+        description: "Days before issues become stale"
+        required: false
+        type: number
+        default: 90
+      days_before_pr_stale:
+        description: "Days before PRs become stale"
+        required: false
+        type: number
+        default: 45
+      days_before_close:
+        description: "Days before stale issues are closed"
+        required: false
+        type: number
+        default: 7
+      days_before_pr_close:
+        description: "Days before PRs are closed (-1 to never close)"
+        required: false
+        type: number
+        default: -1
 
 env:
-  ISSUE_WARN_MESSAGE: >
-    This issue is stale because it has been open 90 days with no activity.
-    Remove stale label or comment or this will be closed in 7 days.
+  ISSUE_WARN_MESSAGE: >-
+    This issue is stale because it has been open
+    ${{ inputs.days_before_stale }} days with no activity.
+    Remove stale label or comment or this will be closed in
+    ${{ inputs.days_before_close }} days.
 
-  PR_WARN_MESSAGE: >
-    This PR is stale because it has been open 45 days with no activity.
+  PR_WARN_MESSAGE: >-
+    This PR is stale because it has been open
+    ${{ inputs.days_before_pr_stale }} days with no activity.
 
   ISSUE_CLOSE_MESSAGE: >
-    This issue was closed because it has been stalled for 7 days with no
-    activity. Feel free to reopen if this issue is still relevant, or to ping
+    This issue was closed because it has been stalled for
+    ${{ inputs.days_before_close }} days with no activity.
+    Feel free to reopen if this issue is still relevant, or to ping
+    the collaborator who labelled it stalled if you have any questions.
+
+  PR_CLOSE_MESSAGE: >
+    This PR was closed because it has been stalled for
+    ${{ inputs.days_before_pr_close }} days with no activity.
+    Feel free to reopen if this PR is still relevant, or to ping
     the collaborator who labelled it stalled if you have any questions.
 
 jobs:
@@ -45,12 +91,13 @@ jobs:
         with:
           # Run the stale workflow as dry-run (no actions will be taken)
           # debug-only: true
-          stale-issue-label: stale
+          stale-issue-label: ${{ inputs.stale_issue_label }}
           stale-issue-message: ${{ env.ISSUE_WARN_MESSAGE }}
-          stale-pr-message: ${{ env.PR_WARN_MESSAGE }}
           close-issue-message: ${{ env.ISSUE_CLOSE_MESSAGE }}
-          days-before-stale: 90
-          days-before-pr-stale: 45
-          days-before-close: 7
-          # Never close a PR
-          days-before-pr-close: -1
+          stale-pr-label: ${{ inputs.stale_pr_label }}
+          stale-pr-message: ${{ env.PR_WARN_MESSAGE }}
+          close-pr-message: ${{ env.PR_CLOSE_MESSAGE }}
+          days-before-stale: ${{ inputs.days_before_stale }}
+          days-before-pr-stale: ${{ inputs.days_before_pr_stale }}
+          days-before-close: ${{ inputs.days_before_close }}
+          days-before-pr-close: ${{ inputs.days_before_pr_close }}

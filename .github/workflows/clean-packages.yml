@@ -13,7 +13,7 @@ name: Delete untagged and/or unsupported Docker images on ghcr.io
 # https://docs.github.com/en/actions/using-workflows/reusing-workflows
 
 on:
-  # Allows this workflow to be called by other workflows
+  # Allow this workflow to be called by other workflows
   workflow_call:
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
     inputs:

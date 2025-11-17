@@ -14,7 +14,7 @@ name: Lint for best practices and CIS benchmarks of multi-platform Docker
 # https://docs.github.com/en/actions/using-workflows/reusing-workflows
 
 on:
-  # Run as reusable workflow
+  # Allow this workflow to be called by other workflows
   workflow_call:
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
     inputs:

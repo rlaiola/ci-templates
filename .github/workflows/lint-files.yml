@@ -9,6 +9,9 @@ name: Lint code base
 # GitHub Actions Documentation
 # https://docs.github.com/en/github-ae@latest/actions
 
+# Reusing workflows
+# https://docs.github.com/en/actions/using-workflows/reusing-workflows
+
 on:
   # Run on all pushes (except on master/main branch)
   push:
@@ -28,7 +31,7 @@ on:
           The branch, tag or SHA to checkout (empty for current branch)
         required: false
         type: string
-  # or on calling as reusable workflow
+  # or allow this workflow to be called by other workflows
   workflow_call:
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
     inputs:
