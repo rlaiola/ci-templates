@@ -10,17 +10,24 @@ name: Delete GitHub Actions cache for repository
 # https://docs.github.com/en/github-ae@latest/actions
 
 on:
-  # Run on Sundays at 10:15 AM UTC
-  schedule:
-    - cron: '15 10 * * 0'
-  # or on button click
+  # Allows manual triggering of the workflow
   workflow_dispatch:
+    inputs:
+      repository:
+        description: >-
+          Repository whose cache should be deleted
+          (default: caller repository)
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:
+        required: true
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY_HOST: ghcr.io
   # Use github.repository (<account>/<repo>)
-  REPOSITORY_NAME: ${{ github.repository }}
+  REPOSITORY_NAME: ${{ inputs.repository || github.repository }}
 
 jobs:
   cleanup:
