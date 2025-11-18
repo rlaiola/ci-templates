@@ -39,39 +39,38 @@ Builds and publishes multi-platform Docker images to ghcr.io with support for mu
 - Push-by-digest for efficient multi-arch builds
 
 ```mermaid
-flowchart TD
+sequenceDiagram
+    autonumber
 
-    A[Workflow Call<br/>Inputs: images, parents, platforms, tags, ref] --> BUILD
+    participant W as Workflow Call
+    participant B as build (matrix job)
+    participant A as Artifact Store
+    participant M as merge job
+    participant R as GHCR
 
-    subgraph BUILD [Job: build matrix]
-        B1[Setup variables]
-        B2[Checkout repository]
-        B3[Setup QEMU]
-        B4[Setup Buildx]
-        B5[Login to GHCR]
-        B6[Extract metadata]
-        B7[Build and push image<br/>push-by-digest]
-        B8[Export digest]
-        B9[Upload digest artifact]
+    W->>B: Start build job (matrix of images × parents × platforms)
 
-        B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7 --> B8 --> B9
-    end
+    B->>B: Setup variables (image, release, arch)
+    B->>B: Checkout code
+    B->>B: Setup QEMU & Buildx
+    B->>R: Login to GHCR
+    B->>B: Extract Docker metadata
+    B->>R: Build & push image (push-by-digest)
+    B->>A: Upload digest artifact
 
-    BUILD --> MERGE
+    B-->>W: Build completed (all matrix entries)
 
-    subgraph MERGE [Job: merge]
-        C1[Setup variables and tags]
-        C2[Download digest artifacts]
-        C3[Setup Buildx]
-        C4[Extract metadata]
-        C5[Login to GHCR]
-        C6[Create manifest list]
-        C7[Inspect image]
+    W->>M: Start merge job (per image × parent)
 
-        C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7
-    end
+    M->>A: Download digest artifacts
+    M->>M: Setup variables & tags
+    M->>M: Setup Buildx
+    M->>R: Login to GHCR
+    M->>R: Create manifest list (multi-arch)
+    M->>R: Push final image tags
+    R-->>M: Manifest published
 
-    MERGE --> D[(Multi-platform image<br/>published to GHCR)]
+    M-->>W: Workflow complete
 ```
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
