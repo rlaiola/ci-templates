@@ -23,7 +23,7 @@
 // https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
   // A name for the dev container displayed in the UI.
-  "name": "ci-templates",
+  "name": "ci-templates-devcontainer",
 
   // "image": "mcr.microsoft.com/devcontainers/base:jammy",
   // Or use a Dockerfile or Docker Compose file. More info:
@@ -40,7 +40,7 @@
 
   // An array of Docker CLI arguments that should be used when running the
   // container.
-  "runArgs": ["--name=ci-templates", "--rm"],
+  "runArgs": ["--name=ci-templates-devcontainer", "--rm"],
 
   // Use 'postCreateCommand' to run commands after the container is created.
   // "postCreateCommand": "uname -a",
@@ -59,10 +59,6 @@
   // "mounts": [
   //   "source=${localWorkspaceFolder}/data,target=/data,type=bind,consistency=cached"
   // ],
-  
-  // Features to add to the dev container.
-  // More info: https://containers.dev/features.
-  // "features": {},
 
   // Use 'forwardPorts' to make a list of ports inside the container
   // available locally.
@@ -79,7 +75,6 @@
         "ms-azuretools.vscode-docker",
         "davidanson.vscode-markdownlint",
         "fnando.linter",
-        "ReneSaarsoo.sql-formatter-vsc",
         "streetsidesoftware.code-spell-checker",
         "touchlab.touchlab-vscode-office",
         "mermaidchart.vscode-mermaid-chart"
@@ -89,6 +84,9 @@
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "root",
+
+  // Features to add to the dev container.
+  // More info: https://containers.dev/features.
   "features": {
     "ghcr.io/akhildevelops/devcontainer-features/apt:0": {},
     "ghcr.io/devcontainers/features/git:1": {

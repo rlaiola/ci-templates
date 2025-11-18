@@ -41,8 +41,7 @@ on:
         description: Git URL of the repository to clone from
         value: ${{ jobs.get-matrix.outputs.repository }}
       ref:
-        description:
-          The branch, tag or SHA to point to in the cloned repository
+        description: The branch, tag or SHA to point to in the cloned repository
         value: ${{ jobs.get-matrix.outputs.ref }}
 
 jobs:
@@ -60,14 +59,12 @@ jobs:
     steps:
       # Checkout a repository, so the workflow can access it
       # https://github.com/actions/checkout
-      -
-        name: Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v5
 
       # Setting output parameters between steps, jobs and/or workflows
       # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter
-      -
-        id: set-json
+      - id: set-json
         name: Get build matrix from file
         run: |
 
@@ -78,8 +75,7 @@ jobs:
           # Passing filename between jobs and/or workflows
           echo "json=${JSON}" >> "$GITHUB_OUTPUT"
 
-      -
-        id: parse-matrix
+      - id: parse-matrix
         name: Set build matrix of releases, parent images and os/architectures
         run: |
 

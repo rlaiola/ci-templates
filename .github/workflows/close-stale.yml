@@ -22,32 +22,32 @@ on:
   workflow_call:
     inputs:
       stale_issue_label:
-        description: "Label to mark issues and PRs as stale"
+        description: 'Label to mark issues and PRs as stale'
         required: false
         type: string
-        default: "stale"
+        default: 'stale'
       stale_pr_label:
-        description: "Label to mark PRs as stale"
+        description: 'Label to mark PRs as stale'
         required: false
         type: string
-        default: "stale"
+        default: 'stale'
       days_before_stale:
-        description: "Days before issues become stale"
+        description: 'Days before issues become stale'
         required: false
         type: number
         default: 90
       days_before_pr_stale:
-        description: "Days before PRs become stale"
+        description: 'Days before PRs become stale'
         required: false
         type: number
         default: 45
       days_before_close:
-        description: "Days before stale issues are closed"
+        description: 'Days before stale issues are closed'
         required: false
         type: number
         default: 7
       days_before_pr_close:
-        description: "Days before PRs are closed (-1 to never close)"
+        description: 'Days before PRs are closed (-1 to never close)'
         required: false
         type: number
         default: -1
@@ -86,8 +86,7 @@ jobs:
     steps:
       # Close Stale Issues and PRs
       # https://github.com/actions/stale
-      -
-        uses: actions/stale@v10
+      - uses: actions/stale@v10
         with:
           # Run the stale workflow as dry-run (no actions will be taken)
           # debug-only: true
