@@ -2,6 +2,17 @@
 
 Reusable GitHub Actions workflow templates for building, testing, and maintaining Docker images and code quality.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Available Workflows](#available-workflows)
+- [Usage in Other Repositories](#usage-in-other-repositories)
+- [Configuration Files](#configuration-files)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
+- [Security](#security)
+- [License](#license)
+
 ## Overview
 
 This repository contains a collection of reusable GitHub Actions workflows that can be used across multiple repositories to:
@@ -26,6 +37,46 @@ Builds and publishes multi-platform Docker images to ghcr.io with support for mu
 - GitHub Actions cache optimization
 - Automatic tagging strategies (semver, branch, schedule)
 - Push-by-digest for efficient multi-arch builds
+
+```mermaid
+flowchart TD
+
+    %% Workflow Trigger
+    A[workflow_call<br/>inputs: images, parents, platforms,<br/>tags, latest, ref, code_repo, code_ref] --> B
+
+    %% Build Job (matrix)
+    subgraph B[Job: build (matrix)]
+        direction TB
+
+        B1[Setup variables<br/>release_name, arch_name,<br/>base_image, cache-from/to, paths]
+        B2[Checkout repository]
+        B3[Setup QEMU]
+        B4[Setup Docker Buildx]
+        B5[Login to GHCR]
+        B6[Extract metadata (docker/metadata-action)]
+        B7[Build & Push image<br/>(docker/build-push-action)<br/>push-by-digest=true]
+        B8[Export digest<br/>create digest file]
+        B9[Upload digest artifact]
+    end
+
+    %% Merge Job
+    B --> C
+
+    subgraph C[Job: merge]
+        direction TB
+
+        C1[Setup variables<br/>release_name, digests_path,<br/>tags, extra_tags]
+        C2[Download digest artifacts]
+        C3[Setup Docker Buildx]
+        C4[Extract metadata + tags]
+        C5[Login to GHCR]
+        C6[Create manifest list<br/>(buildx imagetools create)]
+        C7[Inspect manifest image]
+    end
+
+    %% Final Result
+    C --> D[(Multi-platform image<br/>published to GHCR<br/><code>ghcr.io/OWNER/image:tag</code>)]
+```
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
 
