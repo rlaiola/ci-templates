@@ -75,6 +75,8 @@ sequenceDiagram
     M-->>W: Build & publish complete
 ```
 
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+
 ### [scan-images.yml](.github/workflows/scan-images.yml)
 
 Performs security vulnerability scanning on Docker images using Trivy.
@@ -122,6 +124,8 @@ sequenceDiagram
 
     S-->>W: Security scan complete
 ```
+
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
 
 ### [lint-images.yml](.github/workflows/lint-images.yml)
 
@@ -173,6 +177,8 @@ sequenceDiagram
     L-->>W: Image linting complete
 ```
 
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+
 ### [lint-files.yml](.github/workflows/lint-files.yml)
 
 Lints the entire codebase using Super-Linter.
@@ -218,6 +224,8 @@ sequenceDiagram
 
     L-->>T: Workflow completes
 ```
+
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
 
 ### [clean-packages.yml](.github/workflows/clean-packages.yml)
 
@@ -269,6 +277,8 @@ sequenceDiagram
     C-->>W: Done
 ```
 
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+
 ### [clean-cache.yml](.github/workflows/clean-cache.yml)
 
 Deletes all GitHub Actions cache entries for a repository.
@@ -308,6 +318,8 @@ sequenceDiagram
 
     C-->>W: Workflow completes successfully
 ```
+
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
 
 ### [close-stale.yml](.github/workflows/close-stale.yml)
 
@@ -358,6 +370,8 @@ sequenceDiagram
     S-->>T: Workflow completes
 ```
 
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+
 ### [read-matrix.yml](.github/workflows/read-matrix.yml)
 
 Reads build matrix configuration from a JSON file.
@@ -393,6 +407,8 @@ sequenceDiagram
 
     Note over W,M: Reusable source of truth for build matrix<br>Centralized in a single JSON file
 ```
+
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
 
 ## Usage in Other Repositories
 
