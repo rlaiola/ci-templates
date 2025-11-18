@@ -21,8 +21,8 @@
 FROM mcr.microsoft.com/devcontainers/base:jammy
 
 LABEL authors="Rodrigo Laiola Guimaraes"
-ENV CREATED_AT=2025-10-15
-ENV UPDATED_AT=2025-10-15
+ENV CREATED_AT=2024-08-15
+ENV UPDATED_AT=2025-10-31
 
 # No interactive frontend during docker build
 ENV DEBIAN_FRONTEND=noninteractive
