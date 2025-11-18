@@ -41,36 +41,38 @@ Builds and publishes multi-platform Docker images to ghcr.io with support for mu
 ```mermaid
 sequenceDiagram
     autonumber
-
     participant W as Workflow Call
-    participant B as build (matrix job)
-    participant A as Artifact Store
-    participant M as merge job
-    participant R as GHCR
+    participant B as build job<br>(matrix: image × parent × platform)
+    participant M as merge job<br>(matrix: image × parent)
+    participant GHCR as ghcr.io
+    participant Artifacts as GitHub Artifacts
 
-    W->>B: Start build job (matrix of images × parents × platforms)
+    W->>B: Trigger workflow_call<br>Inputs: images, parents, platforms, tags, latest, ref, ...
 
-    B->>B: Setup variables (image, release, arch)
-    B->>B: Checkout code
-    B->>B: Setup QEMU & Buildx
-    B->>R: Login to GHCR
-    B->>B: Extract Docker metadata
-    B->>R: Build & push image (push-by-digest)
-    B->>A: Upload digest artifact
+    Note over B: permissions: contents:read, packages:write
 
-    B-->>W: Build completed (all matrix entries)
+    B->>B: Checkout code (optional ref / external repo)
+    B->>B: Setup QEMU + Buildx + Login to GHCR
 
-    W->>M: Start merge job (per image × parent)
+    B->>GHCR: Build & push single-arch image by digest<br>(with layer caching from current + base branch)
 
-    M->>A: Download digest artifacts
-    M->>M: Setup variables & tags
-    M->>M: Setup Buildx
-    M->>R: Login to GHCR
-    M->>R: Create manifest list (multi-arch)
-    M->>R: Push final image tags
-    R-->>M: Manifest published
+    B->>Artifacts: Upload digest file<br>(one artifact per image+release+arch)
 
-    M-->>W: Workflow complete
+    Note over B,M: All platform-specific builds complete<br>(fail-fast: false → full matrix runs)
+
+    M->>Artifacts: Download all digests for this image+release
+    M->>M: Generate final tag list using docker/metadata-action<br>• semver, raw, nightly, latest (if enabled + default parent)
+
+    M->>GHCR: Login to GHCR
+    M->>GHCR: Create multi-arch manifest list<br>docker buildx imagetools create -t <all-tags> <digests...>
+
+    M->>GHCR: Push final tagged multi-arch image<br>(including :latest when appropriate)
+
+    M->>M: Inspect final image (optional)
+
+    Note over B,GHCR: All images built per-platform<br>→ merged into clean, tagged multi-arch manifests
+
+    M-->>W: Build & publish complete
 ```
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
@@ -316,6 +318,45 @@ Automatically marks and closes stale issues and pull requests.
 - Configurable staleness periods
 - Customizable warning and closing messages
 - Separate handling for issues and PRs
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Trigger<br>(schedule / dispatch / workflow_call)
+    participant S as stale job<br>(ubuntu-latest)
+    participant GH as GitHub Issues & PRs
+
+    T->>S: Run daily at 18:30 UTC<br>or manually / via workflow_call
+    Note right of T: Configurable via inputs:<br>• stale labels<br>• days before stale/close<br>• custom messages
+
+    Note over S: permissions: issues:write, pull-requests:write
+
+    S->>GH: actions/stale@v10 analyzes repository
+
+    loop For every open issue
+        alt No activity for ≥ ${{ inputs.days_before_stale }} days
+            S->>GH: Add label: ${{ inputs.stale_issue_label }}<br>Comment: "This issue is stale..."
+        end
+        alt Has stale label AND no activity for ≥ ${{ inputs.days_before_close }} days
+            S->>GH: Close issue + comment: "Closed due to inactivity"
+        end
+    end
+
+    loop For every open pull request
+        alt No activity for ≥ ${{ inputs.days_before_pr_stale }} days
+            S->>GH: Add label: ${{ inputs.stale_pr_label }}<br>Comment: "This PR is stale..."
+        end
+        alt Has stale label AND no activity<br>AND days_before_pr_close ≠ -1
+            S->>GH: Close PR + comment: "Closed due to inactivity"
+        else if days_before_pr_close == -1
+            Note right of S: PRs are only marked stale<br>→ never auto-closed
+        end
+    end
+
+    Note over S,GH: Stale issues/PRs automatically warned<br>and optionally closed<br>Keeps repository clean and active
+
+    S-->>T: Workflow completes
+```
 
 ### [read-matrix.yml](.github/workflows/read-matrix.yml)
 
