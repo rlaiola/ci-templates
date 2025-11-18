@@ -103,6 +103,42 @@ Lints the entire codebase using Super-Linter.
 - Dockerfile, YAML, JSON, Markdown validation
 - Configurable via `.github/super-linter.env`
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Trigger<br>(push / PR / dispatch / workflow_call)
+    participant L as lint job<br>(ubuntu-latest)
+    participant Repo as GitHub Repository
+    participant SL as Super-Linter<br>(slim image)
+
+    T->>L: Trigger workflow<br>(push to non-main, PR to main, manual, or call)
+    Note right of T: Optional input: ref (branch/tag/SHA)
+
+    Note over L: permissions: contents:read, statuses:write
+
+    alt inputs.ref is empty or not provided
+        L->>Repo: Checkout current commit + full history<br>(fetch-depth: 0)
+    else
+        L->>Repo: Checkout specified ref + full history<br>(ref: ${{ inputs.ref }})
+    end
+
+    L->>L: Load Super-Linter environment variables<br>(from .github/super-linter.env → $GITHUB_ENV)
+
+    L->>SL: Run super-linter/super-linter/slim@v8
+    SL->>Repo: Analyze changed + all relevant files<br>(using full git history)
+    SL-->>L: Validation results (pass/fail per linter)
+
+    alt All linters pass
+        L-->>T: Job succeeds → status: success
+    else
+        L-->>T: Job fails → status: failure + annotated errors
+    end
+
+    Note over L,SL: Code base has been fully linted<br>with multiple languages/formatters
+
+    L-->>T: Workflow completes
+```
+
 ### [clean-packages.yml](.github/workflows/clean-packages.yml)
 
 Removes untagged and unsupported Docker image versions from ghcr.io.
@@ -113,6 +149,46 @@ Removes untagged and unsupported Docker image versions from ghcr.io.
 - Removes deprecated version tags
 - Preserves supported releases
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as Workflow Call
+    participant S as setup job<br>(read-matrix.yml)
+    participant C as cleanup job
+    participant GHCR as ghcr.io
+
+    W->>S: Get supported releases (from matrix.json)
+    S-->>C: outputs.release → list of supported versions
+
+    W->>C: Trigger cleanup (optional: extra tags to keep)
+
+    Note over C: permissions: packages:write
+
+    C->>C: Build final "keep these tags" list<br>(supported releases + input tags)
+
+    %% Phase 1 – Untagged images
+    C->>GHCR: crane manifest → collect digests of all kept tags
+    C->>GHCR: Delete ONLY untagged versions<br>but ignore digests belonging to kept tags
+    GHCR-->>C: Untagged garbage removed
+
+    %% Phase 2 – Fully unsupported (deprecated) tags
+    C->>GHCR: crane ls → get all existing tags
+    C->>C: Find deprecated tags = all tags ∉ keep-list
+
+    alt There are deprecated tags
+        C->>GHCR: Query GitHub API → get version IDs for deprecated tags
+        C->>C: Skip any version that also has a supported tag
+        C->>GHCR: Delete remaining unsupported package versions by ID
+        GHCR-->>C: Deprecated images removed
+    else
+        Note right of C: Nothing to delete
+    end
+
+    Note over W,GHCR: Repository is now clean:<br>• No untagged images<br>• No unsupported/old tags
+
+    C-->>W: Done
+```
+
 ### [clean-cache.yml](.github/workflows/clean-cache.yml)
 
 Deletes all GitHub Actions cache entries for a repository.
@@ -121,6 +197,37 @@ Deletes all GitHub Actions cache entries for a repository.
 
 - Batch deletion of cache entries
 - Useful for troubleshooting build issues
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as Workflow Call
+    participant C as cleanup job<br>(ubuntu-latest)
+    participant GHA as GitHub Actions Cache<br>(via gh-actions-cache extension)
+
+    W->>C: Trigger workflow_call<br>(optional: repository + GH_TOKEN)
+    Note over C: permissions: actions:write, contents:read
+
+    C->>C: Checkout repository
+
+    C->>GHA: Install gh extension: actions/gh-actions-cache
+
+    loop While caches exist
+        C->>GHA: List up to 100 largest cache entries<br>(gh actions-cache list --limit 100 --sort size)
+        GHA-->>C: Returns cache keys
+
+        alt Caches found
+            C->>GHA: Delete each cache key<br>(gh actions-cache delete <key> --confirm)
+            Note right of C: set +e → individual deletions won't fail job
+        else
+            C->>C: No more caches → done
+        end
+    end
+
+    Note over C,GHA: All GitHub Actions cache entries<br>for the repository have been deleted
+
+    C-->>W: Workflow completes successfully
+```
 
 ### [close-stale.yml](.github/workflows/close-stale.yml)
 
