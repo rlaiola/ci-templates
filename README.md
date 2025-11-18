@@ -41,41 +41,37 @@ Builds and publishes multi-platform Docker images to ghcr.io with support for mu
 ```mermaid
 flowchart TD
 
-    %% Workflow Trigger
-    A[workflow_call<br/>inputs: images, parents, platforms,<br/>tags, latest, ref, code_repo, code_ref] --> B
+    A[Workflow Call<br/>Inputs: images, parents, platforms, tags, ref] --> BUILD
 
-    %% Build Job (matrix)
-    subgraph B[Job: build (matrix)]
-        direction TB
-
-        B1[Setup variables<br/>release_name, arch_name,<br/>base_image, cache-from/to, paths]
+    subgraph BUILD [Job: build matrix]
+        B1[Setup variables]
         B2[Checkout repository]
         B3[Setup QEMU]
-        B4[Setup Docker Buildx]
+        B4[Setup Buildx]
         B5[Login to GHCR]
-        B6[Extract metadata (docker/metadata-action)]
-        B7[Build & Push image<br/>(docker/build-push-action)<br/>push-by-digest=true]
-        B8[Export digest<br/>create digest file]
+        B6[Extract metadata]
+        B7[Build and push image<br/>push-by-digest]
+        B8[Export digest]
         B9[Upload digest artifact]
+
+        B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7 --> B8 --> B9
     end
 
-    %% Merge Job
-    B --> C
+    BUILD --> MERGE
 
-    subgraph C[Job: merge]
-        direction TB
-
-        C1[Setup variables<br/>release_name, digests_path,<br/>tags, extra_tags]
+    subgraph MERGE [Job: merge]
+        C1[Setup variables and tags]
         C2[Download digest artifacts]
-        C3[Setup Docker Buildx]
-        C4[Extract metadata + tags]
+        C3[Setup Buildx]
+        C4[Extract metadata]
         C5[Login to GHCR]
-        C6[Create manifest list<br/>(buildx imagetools create)]
-        C7[Inspect manifest image]
+        C6[Create manifest list]
+        C7[Inspect image]
+
+        C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7
     end
 
-    %% Final Result
-    C --> D[(Multi-platform image<br/>published to GHCR<br/><code>ghcr.io/OWNER/image:tag</code>)]
+    MERGE --> D[(Multi-platform image<br/>published to GHCR)]
 ```
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
