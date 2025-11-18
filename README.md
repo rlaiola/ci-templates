@@ -239,7 +239,7 @@ jobs:
 
 ## Contributing
 
-If you would like to help contribute to this project, please see [CONTRIBUTING.md](https://github.com/rlaiola/ci-templates/blob/main/CONTRIBUTING.md).
+If you would like to help contribute to this project, please see `[CONTRIBUTING.md](https://github.com/rlaiola/ci-templates/blob/main/CONTRIBUTING.md)`.
 
 Before submitting a PR consider building and testing a Docker image locally and checking your code with Super-Linter:
 
@@ -255,11 +255,11 @@ docker run --rm \
 
 ## Code of Conduct
 
-See [CODE_OF_CONDUCT.md](https://github.com/rlaiola/ci-templates/blob/main/CODE_OF_CONDUCT.md) for community standards.
+See `[CODE_OF_CONDUCT.md](https://github.com/rlaiola/ci-templates/blob/main/CODE_OF_CONDUCT.md)` for community standards.
 
 ## Security
 
-See [SECURITY.md](https://github.com/rlaiola/ci-templates/blob/main/SECURITY.md) for security policy and vulnerability reporting.
+See `[SECURITY.md](https://github.com/rlaiola/ci-templates/blob/main/SECURITY.md)` for security policy and vulnerability reporting.
 
 ## License
 
