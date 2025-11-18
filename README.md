@@ -2,6 +2,8 @@
 
 Reusable GitHub Actions workflow templates for building, testing, and maintaining Docker images and code quality.
 
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -13,6 +15,8 @@ Reusable GitHub Actions workflow templates for building, testing, and maintainin
 - [Security](#security)
 - [License](#license)
 
+---
+
 ## Overview
 
 This repository contains a collection of reusable GitHub Actions workflows that can be used across multiple repositories to:
@@ -23,6 +27,8 @@ This repository contains a collection of reusable GitHub Actions workflows that 
 - Lint code bases for quality and standards
 - Clean up unused Docker images and build caches
 - Manage stale issues and pull requests
+
+---
 
 ## Available Workflows
 
@@ -410,6 +416,8 @@ sequenceDiagram
 
 > **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
 
+---
+
 ## Usage in Other Repositories
 
 ### Prerequisites
@@ -545,6 +553,8 @@ jobs:
       days_before_close: 7
 ```
 
+---
+
 ## Configuration Files
 
 - `.github/super-linter.env` - Super-Linter configuration
@@ -552,13 +562,15 @@ jobs:
 - `markdownlint-cli2.jsonc` - Markdown linting configuration
 - `.prettierrc` - Code formatting rules
 
+---
+
 ## Contributing
 
-If you would like to help contribute to this project, please see [CONTRIBUTING.md](https://github.com/rlaiola/ci-templates/blob/main/CONTRIBUTING.md).
+If you would like to contribute to this project, please see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
-Before submitting a PR consider building and testing a Docker image locally and checking your code with Super-Linter:
+Before submitting a PR, you may test your code using Super-Linter:
 
-```sh
+```bash
 docker run --rm \
            -e ACTIONS_RUNNER_DEBUG=true \
            -e RUN_LOCAL=true \
@@ -568,13 +580,19 @@ docker run --rm \
            ghcr.io/super-linter/super-linter:latest
 ```
 
+---
+
 ## Code of Conduct
 
-See [CODE_OF_CONDUCT.md](https://github.com/rlaiola/ci-templates/blob/main/CODE_OF_CONDUCT.md) for community standards.
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards.
+
+---
 
 ## Security
 
-See [SECURITY.md](https://github.com/rlaiola/ci-templates/blob/main/SECURITY.md) for security policy and vulnerability reporting.
+See **[SECURITY.md](SECURITY.md)** for vulnerability reporting instructions.
+
+---
 
 ## License
 
