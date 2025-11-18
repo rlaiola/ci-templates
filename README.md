@@ -83,6 +83,44 @@ Performs security vulnerability scanning on Docker images using Trivy.
 - Generates SARIF reports
 - Multi-platform image support
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as Workflow Call
+    participant S as scan job<br>(matrix: image × parent × platform)
+    participant GHCR as ghcr.io
+    participant Trivy as Trivy Scanner<br>(aquasecurity/trivy-action)
+
+    W->>S: Trigger workflow_call<br>Inputs: images, parents, platforms, tag
+
+    Note over S: permissions: packages:read, security-events:write
+
+    S->>S: Compute per-matrix values<br>• release (from parent)<br>• full image name: ghcr.io/owner/image:tag-release<br>• architecture (from platform)
+
+    S->>S: Setup Docker Buildx
+
+    S->>GHCR: Login to ghcr.io<br>(using GITHUB_TOKEN)
+
+    S->>GHCR: Pull specific platform image<br>docker pull --platform linux/amd64 (etc.)
+
+    S->>Trivy: Scan image with Trivy<br>• Format: SARIF<br>• Ignore unfixed vulnerabilities<br>• Only CRITICAL + HIGH<br>• OS + library packages only
+
+    Trivy-->>S: Generate trivy-<image>-<release>-<arch>-image-results.sarif
+
+    %% Optional upload step (currently commented out in workflow)
+    Note right of S: (Optional: Upload SARIF to GitHub Security tab<br>via github/codeql-action/upload-sarif)
+
+    alt No critical/high issues found
+        S-->>W: Job passes (all matrix combos)
+    else
+        S-->>W: Job fails on first vulnerable image<br>(fail-fast: false → all platforms scanned anyway)
+    end
+
+    Note over S,Trivy: All built multi-platform images<br>scanned for critical vulnerabilities
+
+    S-->>W: Security scan complete
+```
+
 ### [lint-images.yml](.github/workflows/lint-images.yml)
 
 Lints Docker images for best practices and CIS benchmarks using Dockle.
@@ -92,6 +130,46 @@ Lints Docker images for best practices and CIS benchmarks using Dockle.
 - Best practices validation
 - CIS benchmark compliance checks
 - Multi-platform image support
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as Workflow Call
+    participant L as lint job<br>(matrix: image × parent × platform)
+    participant GHCR as ghcr.io
+    participant Dockle as Dockle Linter<br>(erzz/dockle-action)
+
+    W->>L: Trigger workflow_call<br>Inputs: images, parents, platforms, tag
+
+    Note over L: permissions: packages:read, security-events:write
+
+    L->>L: Compute per-matrix values<br>• release (from parent)<br>• full image: ghcr.io/owner/image:tag-release<br>• architecture (from platform)
+
+    L->>L: Checkout repository<br>(to load .dockleignore if present)
+
+    L->>L: Setup Docker Buildx
+
+    L->>GHCR: Login to ghcr.io<br>(using GITHUB_TOKEN)
+
+    L->>GHCR: Pull specific platform image<br>docker pull --platform linux/arm64 (etc.)
+
+    L->>Dockle: Run Dockle on pulled image<br>• Checks CIS benchmarks + best practices<br>• Output: SARIF report<br>• Failure threshold: fatal only<br>• Respects .dockleignore
+
+    Dockle-->>L: Generate dockle-<image>-<release>-<arch>-image-results.sarif
+
+    %% Upload step is currently commented out
+    Note right of L: (Optional: Upload SARIF to GitHub Security tab<br>via codeql-action/upload-sarif)
+
+    alt No fatal issues found
+        L-->>W: Job passes (all matrix variants)
+    else One or more fatal findings
+        L-->>W: Job fails<br>(fail-fast: false → all platforms still checked)
+    end
+
+    Note over L,Dockle: All published multi-platform images<br>validated against Docker/CIS best practices
+
+    L-->>W: Image linting complete
+```
 
 ### [lint-files.yml](.github/workflows/lint-files.yml)
 
@@ -247,6 +325,33 @@ Reads build matrix configuration from a JSON file.
 
 - Centralizes build configuration
 - Outputs matrix values for use in other workflows
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as Workflow Call
+    participant M as get-matrix job<br>(ubuntu-latest)
+    participant Repo as Repository
+    participant File as matrix.json<br>(via inputs.matrix-path)
+
+    W->>M: Call reusable workflow<br>Input: matrix-path (required)
+
+    M->>Repo: Checkout repository<br>(actions/checkout@v5)
+
+    M->>File: Read JSON file at ${{ inputs.matrix-path }}
+
+    M->>M: Parse matrix with jq<br>→ .release, .parent, .platform, .repository, .ref
+
+    M->>M: Determine defaults<br>• default_release = first item in release list<br>• default_parent   = first item in parent list
+
+    M->>M: Set job outputs<br>• release (array)<br>• default_release (string)<br>• parent (array)<br>• default_parent (string)<br>• platform (array)<br>• repository, ref
+
+    Note over M: Outputs are automatically mapped<br>to workflow-level outputs<br>(release, default_release, parent, ...)
+
+    M-->>W: Matrix data ready for downstream jobs<br>(e.g. multi-platform Docker builds)
+
+    Note over W,M: Reusable source of truth for build matrix<br>Centralized in a single JSON file
+```
 
 ## Usage in Other Repositories
 
