@@ -53,27 +53,36 @@ on:
         default: -1
 
 env:
-  ISSUE_WARN_MESSAGE: >-
-    This issue is stale because it has been open
-    ${{ inputs.days_before_stale }} days with no activity.
-    Remove stale label or comment or this will be closed in
-    ${{ inputs.days_before_close }} days.
+  DEFAULT_STALE_ISSUE_LABEL: 'stale'
+  DEFAULT_STALE_PR_LABEL: 'stale'
+  DEFAULT_DAYS_BEFORE_STALE: 90
+  DEFAULT_DAYS_BEFORE_PR_STALE: 45
+  DEFAULT_DAYS_BEFORE_CLOSE: 7
+  DEFAULT_DAYS_BEFORE_PR_CLOSE: -1
 
-  PR_WARN_MESSAGE: >-
+  ISSUE_WARN_MESSAGE: >
+    This issue is stale because it has been open
+    ${{ inputs.days_before_stale || env.DEFAULT_DAYS_BEFORE_STALE }} days with
+    no activity. Remove stale label or comment or this will be closed in
+    ${{ inputs.days_before_close || env.DEFAULT_DAYS_BEFORE_CLOSE }} days.
+
+  PR_WARN_MESSAGE: >
     This PR is stale because it has been open
-    ${{ inputs.days_before_pr_stale }} days with no activity.
+    ${{ inputs.days_before_pr_stale || env.DEFAULT_DAYS_BEFORE_PR_STALE }} days
+    with no activity. Remove stale label or comment or this will be closed in
+    ${{ inputs.days_before_pr_close || env.DEFAULT_DAYS_BEFORE_PR_CLOSE }} days.
 
   ISSUE_CLOSE_MESSAGE: >
     This issue was closed because it has been stalled for
-    ${{ inputs.days_before_close }} days with no activity.
-    Feel free to reopen if this issue is still relevant, or to ping
-    the collaborator who labelled it stalled if you have any questions.
+    ${{ inputs.days_before_close || env.DEFAULT_DAYS_BEFORE_CLOSE }} days
+    with no activity. Feel free to reopen if this issue is still relevant, or
+    to ping the collaborator who labelled it stalled if you have any questions.
 
   PR_CLOSE_MESSAGE: >
     This PR was closed because it has been stalled for
-    ${{ inputs.days_before_pr_close }} days with no activity.
-    Feel free to reopen if this PR is still relevant, or to ping
-    the collaborator who labelled it stalled if you have any questions.
+    ${{ inputs.days_before_pr_close || env.DEFAULT_DAYS_BEFORE_PR_CLOSE }} days
+    with no activity. Feel free to reopen if this PR is still relevant, or to
+    ping the collaborator who labelled it stalled if you have any questions.
 
 jobs:
   stale:
@@ -90,13 +99,13 @@ jobs:
         with:
           # Run the stale workflow as dry-run (no actions will be taken)
           # debug-only: true
-          stale-issue-label: ${{ inputs.stale_issue_label }}
+          stale-issue-label: ${{ inputs.stale_issue_label || env.DEFAULT_STALE_ISSUE_LABEL }}
           stale-issue-message: ${{ env.ISSUE_WARN_MESSAGE }}
           close-issue-message: ${{ env.ISSUE_CLOSE_MESSAGE }}
-          stale-pr-label: ${{ inputs.stale_pr_label }}
+          stale-pr-label: ${{ inputs.stale_pr_label || env.DEFAULT_STALE_PR_LABEL }}
           stale-pr-message: ${{ env.PR_WARN_MESSAGE }}
           close-pr-message: ${{ env.PR_CLOSE_MESSAGE }}
-          days-before-stale: ${{ inputs.days_before_stale }}
-          days-before-pr-stale: ${{ inputs.days_before_pr_stale }}
-          days-before-close: ${{ inputs.days_before_close }}
-          days-before-pr-close: ${{ inputs.days_before_pr_close }}
+          days-before-stale: ${{ inputs.days_before_stale || env.DEFAULT_DAYS_BEFORE_STALE }}
+          days-before-pr-stale: ${{ inputs.days_before_pr_stale || env.DEFAULT_DAYS_BEFORE_PR_STALE }}
+          days-before-close: ${{ inputs.days_before_close || env.DEFAULT_DAYS_BEFORE_CLOSE }}
+          days-before-pr-close: ${{ inputs.days_before_pr_close || env.DEFAULT_DAYS_BEFORE_PR_CLOSE }}
