@@ -53,6 +53,7 @@ on:
         default: -1
 
 env:
+  # Default fallback values (used unless workflow_call or dispatch overrides them)
   DEFAULT_STALE_ISSUE_LABEL: 'stale'
   DEFAULT_STALE_PR_LABEL: 'stale'
   DEFAULT_DAYS_BEFORE_STALE: 90
