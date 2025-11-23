@@ -53,8 +53,8 @@ jobs:
       packages: read
       statuses: write
     env:
-      # Use input.ref if non-empty, otherwise fallback to env.REF (set by caller)
-      REF: ${{ inputs.ref != '' && inputs.ref || env.REF }}
+      # Get ref from workflow input (if any)
+      REF: ${{ inputs.ref || '' }}
 
     steps:
       # Checkout a repository, so the workflow can access it
