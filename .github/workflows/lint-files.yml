@@ -52,13 +52,16 @@ jobs:
       contents: read
       packages: read
       statuses: write
+    env:
+      # Use input.ref if non-empty, otherwise fallback to env.REF (set by caller)
+      REF: ${{ inputs.ref != '' && inputs.ref || env.REF }}
 
     steps:
       # Checkout a repository, so the workflow can access it
       # https://github.com/actions/checkout
-      - name: Checkout repository (no ref input)
+      - name: Checkout repository (no ref provided)
         uses: actions/checkout@v6
-        if: ${{ inputs.ref == '' }}
+        if: ${{ env.REF == '' }}
         with:
           # Full git history is needed to get a proper
           # list of changed files within `super-linter`
@@ -66,11 +69,9 @@ jobs:
 
       - name: Checkout repository (with ref input)
         uses: actions/checkout@v6
-        if: ${{ inputs.ref != '' }}
+        if: ${{ env.REF != '' }}
         with:
-          ref: '${{ inputs.ref }}'
-          # Full git history is needed to get a proper
-          # list of changed files within `super-linter`
+          ref: '${{ env.REF }}'
           fetch-depth: 0
 
       # Load environment variables before running the GitHub Actions job
