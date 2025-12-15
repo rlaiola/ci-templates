@@ -345,7 +345,7 @@ jobs:
       # Download artifacts that have been uploaded from previous jobs
       # https://github.com/actions/download-artifact
       - name: Download digests
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: ${{ steps.setup.outputs.digests_pattern }}-*
           merge-multiple: true
