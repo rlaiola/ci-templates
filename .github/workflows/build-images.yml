@@ -184,7 +184,7 @@ jobs:
       # Login to a Docker registry (except on PR)
       # https://github.com/docker/login-action
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY_HOST }}
           username: ${{ github.actor }}
@@ -374,7 +374,7 @@ jobs:
             org.opencontainers.image.url=${{ steps.setup.outputs.image_name }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY_HOST }}
           username: ${{ github.actor }}
