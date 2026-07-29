@@ -292,13 +292,18 @@ jobs:
           echo "$IMG"
           echo "image_name=$IMG" >> "$GITHUB_OUTPUT"
 
+          # Set safe image name (used in artifact names)
+          IMAGE="${{ matrix.image }}"
+          SAFE_IMAGE="${IMAGE//\//-}"
+          echo "safe_image=$SAFE_IMAGE" >> "$GITHUB_OUTPUT"
+
           # Set digests path
-          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${{ matrix.image }}-${RELEASE}"
+          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${SAFE_IMAGE}-${RELEASE}"
           echo "$DIGESTS_PATH"
           echo "digests_path=$DIGESTS_PATH" >> "$GITHUB_OUTPUT"
 
           # Set digests pattern
-          DIGESTS_PATTERN="digests-${{ matrix.image }}-$RELEASE"
+          DIGESTS_PATTERN="digests-${SAFE_IMAGE}-${RELEASE}"
           echo "$DIGESTS_PATTERN"
           echo "digests_pattern=$DIGESTS_PATTERN" >> "$GITHUB_OUTPUT"
 
