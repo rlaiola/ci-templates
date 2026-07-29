@@ -135,8 +135,13 @@ jobs:
           echo "$DIR"
           echo "folder_name=$DIR" >> "$GITHUB_OUTPUT"
 
+          # Artifact names cannot contain '/'
+          IMAGE_NAME="${{ matrix.image }}"
+          SAFE_IMAGE_NAME="${IMAGE_NAME//\//-}"
+          echo "safe_image=$SAFE_IMAGE_NAME" >> "$GITHUB_OUTPUT"
+
           # Set digests path
-          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${{ matrix.image }}-${RELEASE}"
+          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${SAFE_IMAGE_NAME}-${RELEASE}"
           echo "$DIGESTS_PATH"
           echo "digests_path=$DIGESTS_PATH" >> "$GITHUB_OUTPUT"
 
