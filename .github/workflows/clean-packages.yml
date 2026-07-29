@@ -17,6 +17,10 @@ on:
   workflow_call:
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
     inputs:
+      images:
+        description: 'Matrix of images to clean up'
+        required: true
+        type: string
       tags:
         description: 'Spare unsupported tags (whitespace-separated)'
         required: false
@@ -50,8 +54,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        image:
-          - relax
+        image: ${{ fromJSON(inputs.images) }}
     needs: setup
 
     steps:
