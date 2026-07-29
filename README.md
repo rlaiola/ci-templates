@@ -53,14 +53,14 @@ sequenceDiagram
     participant GHCR as ghcr.io
     participant Artifacts as GitHub Artifacts
 
-    W->>B: Trigger workflow_call<br>Inputs: images, parents, platforms, tags, latest, ref, ...
+    W->>B: Trigger workflow_call<br>Inputs: images, dockerfile, parents, platforms, tags, latest, ref, ...
 
     Note over B: permissions: contents:read, packages:write
 
     B->>B: Checkout code (optional ref / external repo)
     B->>B: Setup QEMU + Buildx + Login to GHCR
 
-    B->>GHCR: Build & push single-arch image by digest<br>(with layer caching from current + base branch)
+    B->>GHCR: Build & push single-arch image by digest<br>(using input Dockerfile, with layer caching)
 
     B->>Artifacts: Upload digest file<br>(one artifact per image+release+arch)
 
@@ -81,7 +81,7 @@ sequenceDiagram
     M-->>W: Build & publish complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT· Simplified for clarity, reflects current implementation_
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
 
