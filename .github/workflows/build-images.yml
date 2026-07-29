@@ -21,6 +21,11 @@ on:
         description: Matrix of images to build
         required: true
         type: string
+      dockerfile:
+        description: Path to the Dockerfile
+        required: false
+        type: string
+        default: Dockerfile
       parents:
         description: Matrix of parent/base images used in builds
         required: true
@@ -210,8 +215,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          # file: docker/dev/${{ steps.setup.outputs.folder_name }}/Dockerfile
-          file: Dockerfile
+          file: ${{ inputs.dockerfile }}
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
