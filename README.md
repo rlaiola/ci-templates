@@ -81,7 +81,7 @@ sequenceDiagram
     M-->>W: Build & publish complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT· Simplified for clarity, reflects current implementation_
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
 
