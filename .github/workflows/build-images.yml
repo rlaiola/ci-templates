@@ -241,8 +241,12 @@ jobs:
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ steps.setup.outputs.digests_path }}/${digest#sha256:}"
 
+          # Artifact names cannot contain '/'
+          IMAGE_NAME="${{ matrix.image }}"
+          SAFE_IMAGE_NAME="${IMAGE_NAME//\//-}"
+
           # Set digests name (used in the next step)
-          DIGESTS_NAME="digests-${{ matrix.image }}-"
+          DIGESTS_NAME="digests-${SAFE_IMAGE_NAME}-"
           DIGESTS_NAME+="${{ steps.setup.outputs.release_name }}-"
           DIGESTS_NAME+="${{ steps.setup.outputs.arch_name }}"
           echo "$DIGESTS_NAME"
