@@ -21,6 +21,10 @@ on:
         description: 'Matrix of images to clean up'
         required: true
         type: string
+      releases:
+        description: 'Supported releases (JSON array)'
+        required: false
+        type: string
       tags:
         description: 'Spare unsupported tags (whitespace-separated)'
         required: false
@@ -38,12 +42,6 @@ env:
   OWNER_NAME: ${{ github.repository_owner }}
 
 jobs:
-  # Calling a reusable workflow
-  setup:
-    uses: rlaiola/ci-templates/.github/workflows/read-matrix.yml@main
-    with:
-      matrix-path: matrix.json
-
   # Ensure that the repository is given Admin access by going on
   # Package settings -> Manage Actions access
   # https://github.com/actions/delete-package-versions/issues/74
@@ -55,7 +53,6 @@ jobs:
     strategy:
       matrix:
         image: ${{ fromJSON(inputs.images) }}
-    needs: setup
 
     steps:
       # Setting output parameters between steps, jobs and/or workflows
@@ -98,11 +95,17 @@ jobs:
         run: |
 
           # Get supported releases
-          RELEASES=${{ toJSON(needs.setup.outputs.release) }}
-          # Remove square brackets and double quotes
-          RELEASES=$(echo $RELEASES | tr -d "[]|\"")
-          # Split string into an array
-          IFS=', ' read -r -a RELEASES <<< "$RELEASES"
+          RELEASES='${{ inputs.releases }}'
+
+          if [[ -n "$RELEASES" ]]; then
+            # Remove square brackets and double quotes
+            RELEASES=$(echo $RELEASES | tr -d "[]|\"")
+            # Split string into an array
+            IFS=', ' read -r -a RELEASES <<< "$RELEASES"
+          else 
+            RELEASES=()
+          fi
+
           # Include custom tags provided as argument
           echo "${{ inputs.tags }}"
           if [[ ! -z "${{ inputs.tags }}" ]];
@@ -183,11 +186,17 @@ jobs:
           echo "$IMG"
 
           # Get supported releases
-          RELEASES=${{ toJSON(needs.setup.outputs.release) }}
-          # Remove square brackets and double quotes
-          RELEASES=$(echo $RELEASES | tr -d "[]|\"")
-          # Split string into an array
-          IFS=', ' read -r -a RELEASES <<< "$RELEASES"
+          RELEASES='${{ inputs.releases }}'
+
+          if [[ -n "$RELEASES" ]]; then
+            # Remove square brackets and double quotes
+            RELEASES=$(echo $RELEASES | tr -d "[]|\"")
+            # Split string into an array
+            IFS=', ' read -r -a RELEASES <<< "$RELEASES"
+          else 
+            RELEASES=()
+          fi
+
           # Include custom tags provided as argument
           echo "${{ inputs.tags }}"
           if [[ ! -z "${{ inputs.tags }}" ]];

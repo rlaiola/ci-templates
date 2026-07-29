@@ -247,43 +247,41 @@ Removes untagged and unsupported Docker image versions from ghcr.io.
 sequenceDiagram
     autonumber
     participant W as Workflow Call
-    participant S as setup job<br>(read-matrix.yml)
-    participant C as cleanup job
+    participant C as cleanup job<br>(matrix: image)
     participant GHCR as ghcr.io
 
-    W->>S: Get supported releases (from matrix.json)
-    S-->>C: outputs.release → list of supported versions
-
-    W->>C: Trigger cleanup (optional: extra tags to keep)
+    W->>C: Trigger workflow_call<br>Inputs: images, releases, tags
 
     Note over C: permissions: packages:write
 
-    C->>C: Build final "keep these tags" list<br>(supported releases + input tags)
+    C->>C: Build final keep-list<br>• supported releases (input)<br>• additional tags (input)
 
     %% Phase 1 – Untagged images
-    C->>GHCR: crane manifest → collect digests of all kept tags
-    C->>GHCR: Delete ONLY untagged versions<br>but ignore digests belonging to kept tags
-    GHCR-->>C: Untagged garbage removed
+    C->>GHCR: Query manifests of kept tags<br>(crane manifest)
+    C->>C: Collect digests of supported images
 
-    %% Phase 2 – Fully unsupported (deprecated) tags
-    C->>GHCR: crane ls → get all existing tags
-    C->>C: Find deprecated tags = all tags ∉ keep-list
+    C->>GHCR: Delete untagged package versions<br>while preserving collected digests
+    GHCR-->>C: Untagged images removed
 
-    alt There are deprecated tags
-        C->>GHCR: Query GitHub API → get version IDs for deprecated tags
-        C->>C: Skip any version that also has a supported tag
-        C->>GHCR: Delete remaining unsupported package versions by ID
+    %% Phase 2 – Unsupported tags
+    C->>GHCR: List all image tags<br>(crane ls)
+    C->>C: Compute deprecated tags<br>(all tags − keep-list)
+
+    alt Deprecated tags exist
+        C->>GHCR: Query GitHub API for package version IDs
+        C->>C: Skip versions shared with supported tags
+        C->>GHCR: Delete unsupported package versions
         GHCR-->>C: Deprecated images removed
-    else
-        Note right of C: Nothing to delete
+    else No deprecated tags
+        C-->>C: Nothing to delete
     end
 
-    Note over W,GHCR: Repository is now clean:<br>• No untagged images<br>• No unsupported/old tags
+    Note over C,GHCR: Container registry cleaned<br>• Untagged images removed<br>• Unsupported tags removed<br>• Supported releases preserved
 
-    C-->>W: Done
+    C-->>W: Cleanup complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT· Simplified for clarity, reflects current implementation_
 
 ### [clean-cache.yml](.github/workflows/clean-cache.yml)
 
