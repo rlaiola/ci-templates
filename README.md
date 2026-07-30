@@ -81,7 +81,7 @@ sequenceDiagram
     M-->>W: Build & publish complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT· Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT · Simplified for clarity, reflects current implementation_
 
 ### [scan-images.yml](.github/workflows/scan-images.yml)
 
@@ -169,14 +169,12 @@ sequenceDiagram
 
     Dockle-->>L: Generate dockle-<image>-<release>-<arch>-image-results.sarif
 
-    L->>GitHub: Upload SARIF report
-    using github/codeql-action/upload-sarif
+    L->>GitHub: Upload SARIF report to GitHub Security tab<br>using github/codeql-action/upload-sarif
     
     alt No fatal issues found
         L-->>W: Job passes (all matrix variants)
     else One or more fatal findings
-        L-->>W: Job fails
-        (fail-fast: false → all platforms still checked)
+        L-->>W: Job fails<br>(fail-fast: false → all platforms still checked)
     end
 
     Note over L,Dockle: All published multi-platform images<br>validated against Docker/CIS best practices
@@ -184,7 +182,7 @@ sequenceDiagram
     L-->>W: Image linting complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT · Simplified for clarity, reflects current implementation_
 
 ### [lint-files.yml](.github/workflows/lint-files.yml)
 
@@ -265,10 +263,8 @@ sequenceDiagram
     GHCR-->>C: Untagged images removed
 
     %% Phase 2 – Unsupported tags
-    C->>GHCR: List all image tags
-    (crane ls)
-    C->>C: Compute deprecated tags
-    (all tags − keep-list)
+    C->>GHCR: List all image tags<br>(crane ls)
+    C->>C: Compute deprecated tags<br>(all tags − keep-list)
 
     alt Deprecated tags exist
         C->>GHCR: Query GitHub API for package version IDs
@@ -284,7 +280,7 @@ sequenceDiagram
     C-->>W: Cleanup complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT· Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT · Simplified for clarity, reflects current implementation_
 
 ### [clean-cache.yml](.github/workflows/clean-cache.yml)
 
