@@ -72,8 +72,10 @@ jobs:
 
           # Set OS release
           PARENT="${{ matrix.parent }}"
-          # Replace 'ubuntu:' with ''
-          RELEASE=${PARENT//ubuntu:/}
+          RELEASE="${PARENT##*:}"
+          if [[ "$RELEASE" == *-* ]]; then
+              RELEASE="${RELEASE##*-}"
+          fi
           echo "$RELEASE"
           echo "release_name=$RELEASE" >> "$GITHUB_OUTPUT"
 
