@@ -104,11 +104,11 @@ jobs:
         run: |
 
           # Set image
-          # IMAGE="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
-          IMAGE="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
-          IMAGE+="${{ matrix.image }}"
-          echo "$IMAGE"
-          echo "image_name=$IMAGE" >> "$GITHUB_OUTPUT"
+          # IMG="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
+          IMG="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
+          IMG+="${{ matrix.image }}"
+          echo "$IMG"
+          echo "image_name=$IMG" >> "$GITHUB_OUTPUT"
 
           # Set base image (used to build)
           BASE_IMAGE="${{ matrix.parent }}"
@@ -285,11 +285,11 @@ jobs:
         run: |
 
           # Set image
-          # IMAGE="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
-          IMAGE="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
-          IMAGE+="${{ matrix.image }}"
-          echo "$IMAGE"
-          echo "image_name=$IMAGE" >> "$GITHUB_OUTPUT"
+          # IMG="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
+          IMG="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
+          IMG+="${{ matrix.image }}"
+          echo "$IMG"
+          echo "image_name=$IMG" >> "$GITHUB_OUTPUT"
 
           # Set OS release
           PARENT="${{ matrix.parent }}"
