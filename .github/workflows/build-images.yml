@@ -117,7 +117,7 @@ jobs:
 
           # Set OS release
           PARENT="${{ matrix.parent }}"
-          RELEASE="${PARENT##*:}"
+          RELEASE="${PARENT##*-}"
           echo "$RELEASE"
           echo "release_name=$RELEASE" >> "$GITHUB_OUTPUT"
 
@@ -293,7 +293,7 @@ jobs:
 
           # Set OS release
           PARENT="${{ matrix.parent }}"
-          RELEASE="${PARENT##*:}"
+          RELEASE="${PARENT##*-}"
           echo "$RELEASE"
           echo "release_name=$RELEASE" >> "$GITHUB_OUTPUT"
 
