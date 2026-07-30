@@ -34,6 +34,11 @@ on:
         description: Image tag
         required: true
         type: string
+      accept-filenames:
+        description: Comma-separated list of filenames accepted by Dockle
+        required: false
+        type: string
+        default: ''
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -73,8 +78,10 @@ jobs:
 
           # Set OS release
           PARENT="${{ matrix.parent }}"
-          # Replace 'ubuntu:' with ''
-          RELEASE=${PARENT//ubuntu:/}
+          RELEASE="${PARENT##*:}"
+          if [[ "$RELEASE" == *-* ]]; then
+              RELEASE="${RELEASE##*-}"
+          fi
           echo "$RELEASE"
           echo "release_name=$RELEASE" >> "$GITHUB_OUTPUT"
 
@@ -142,7 +149,7 @@ jobs:
           report-format: sarif
           report-name: '${{ steps.setup.outputs.report_name }}'
           failure-threshold: fatal
-          # accept-filenames: settings.py
+          accept-filenames: ${{ inputs.accept-filenames }}
           # Change to 1 in order to stop the pipeline on failure
           # exit-code: 1
           timeout: 10m
