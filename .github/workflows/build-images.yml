@@ -70,7 +70,7 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY_HOST: ghcr.io
   # Use github.repository (<account>/<repo>)
-  REPOSITORY_NAME: ${{ github.repository }}
+  REPOSITORY: ${{ github.repository }}
   # Use github.repository_owner (<account>)
   OWNER_NAME: ${{ github.repository_owner }}
   # Use GitHub local artifacts
@@ -103,10 +103,21 @@ jobs:
         id: setup
         run: |
 
+          # Set image
+          # IMAGE="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
+          IMAGE="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
+          IMAGE+="${{ matrix.image }}"
+          echo "$IMAGE"
+          echo "image_name=$IMAGE" >> "$GITHUB_OUTPUT"
+
+          # Set base image (used to build)
+          BASE_IMAGE="${{ matrix.parent }}"
+          echo "$BASE_IMAGE"
+          echo "base_image=$BASE_IMAGE" >> "$GITHUB_OUTPUT"
+
           # Set OS release
           PARENT="${{ matrix.parent }}"
-          # Replace 'ubuntu:' with ''
-          RELEASE=${PARENT//ubuntu:/}
+          RELEASE="${PARENT##*:}"
           echo "$RELEASE"
           echo "release_name=$RELEASE" >> "$GITHUB_OUTPUT"
 
@@ -118,57 +129,53 @@ jobs:
           echo "$ARCH"
           echo "arch_name=$ARCH" >> "$GITHUB_OUTPUT"
 
-          # Set base image (used in build)
-          BASE_IMAGE="${{ matrix.parent }}"
-          echo "$BASE_IMAGE"
-          echo "base_image=$BASE_IMAGE" >> "$GITHUB_OUTPUT"
+          # Artifact names cannot contain '/' and/or ':'
+          SAFE_IMAGE="${{ matrix.image }}"
+          SAFE_IMAGE="${SAFE_IMAGE//\//-}"
+          echo "${SAFE_IMAGE}"
+          echo "safe_image=$SAFE_IMAGE" >> "$GITHUB_OUTPUT"
 
-          # Set image
-          # IMG="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
-          IMG="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
-          IMG+="${{ matrix.image }}"
-          echo "$IMG"
-          echo "image_name=$IMG" >> "$GITHUB_OUTPUT"
+          SAFE_FOLDER="${{ matrix.image }}-${RELEASE}"
+          SAFE_FOLDER="${SAFE_FOLDER//\//-}"
+          SAFE_FOLDER="${SAFE_FOLDER//://-}"
+          echo "${SAFE_FOLDER}"
+          echo "safe_folder=$SAFE_FOLDER" >> "$GITHUB_OUTPUT"
 
-          # Set folder
-          DIR="${{ matrix.image }}"
-          echo "$DIR"
-          echo "folder_name=$DIR" >> "$GITHUB_OUTPUT"
-
-          # Artifact names cannot contain '/'
-          IMAGE_NAME="${{ matrix.image }}"
-          SAFE_IMAGE_NAME="${IMAGE_NAME//\//-}"
-          echo "safe_image=$SAFE_IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          SAFE_FILENAME="${{ matrix.image }}-${RELEASE}-${ARCH}"
+          SAFE_FILENAME="${SAFE_FILENAME//\//-}"
+          SAFE_FILENAME="${SAFE_FILENAME//:/-}"
+          echo "${SAFE_FILENAME}"
+          echo "safe_filename=$SAFE_FILENAME" >> "$GITHUB_OUTPUT"
 
           # Set digests path
-          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${SAFE_IMAGE_NAME}-${RELEASE}"
+          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${SAFE_FOLDER}"
           echo "$DIGESTS_PATH"
           echo "digests_path=$DIGESTS_PATH" >> "$GITHUB_OUTPUT"
 
           # Set the cache-to output
           # https://docs.docker.com/build/cache/backends/gha/
-          echo "${{ github.ref_name }}-${{ matrix.image }}-$RELEASE-$ARCH"
+          echo "${{ github.ref_name }}-${SAFE_FILENAME}"
           CACHE_TO="type=gha,scope=${{ github.ref_name }}-"
-          CACHE_TO+="${{ matrix.image }}-$RELEASE-$ARCH"
+          CACHE_TO+="${SAFE_FILENAME}"
           echo "cache-to=$CACHE_TO" >> "${GITHUB_OUTPUT}"
 
           # Set the cache-from output
           if [[ "${{ github.event_name }}" == 'push' ]]; then
-            echo "${{ github.ref_name }}-${{ matrix.image }}-$RELEASE-$ARCH"
+            echo "${{ github.ref_name }}-${SAFE_FILENAME}"
             CACHE_FROM="type=gha,scope=${{ github.ref_name }}-"
-            CACHE_FROM+="${{ matrix.image }}-$RELEASE-$ARCH"
+            CACHE_FROM+="${SAFE_FILENAME}"
             echo "cache-from=$CACHE_FROM" >> "${GITHUB_OUTPUT}"
           else
             # Use cache from target branch too when building a pull request
             # In this case, it has to be a multiline string
             # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
-            SCOPE_REF_NAME="${{ github.ref_name }}-${{ matrix.image }}"
-            SCOPE_BASE_REF="${{ github.base_ref }}-${{ matrix.image }}"
+            SCOPE_REF_NAME="${{ github.ref_name }}-${SAFE_FILENAME}"
+            SCOPE_BASE_REF="${{ github.base_ref }}-${SAFE_FILENAME}"
             EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
             echo "cache-from<<${EOF}" >> "${GITHUB_OUTPUT}"
             printf '%s\n' \
-              "type=gha,scope=$SCOPE_REF_NAME-$RELEASE-$ARCH" \
-              "type=gha,scope=$SCOPE_BASE_REF-$RELEASE-$ARCH" \
+              "type=gha,scope=${SCOPE_REF_NAME}" \
+              "type=gha,scope=${SCOPE_BASE_REF}" \
               >> "${GITHUB_OUTPUT}"
             echo "${EOF}" >> "${GITHUB_OUTPUT}"
           fi
@@ -211,7 +218,7 @@ jobs:
             org.opencontainers.image.title=${{ matrix.image }}
 
             org.opencontainers.image.description=A multi-platform/arch
-            image of the ${{ env.REPOSITORY_NAME }} project
+            image of the ${{ env.REPOSITORY }} project
 
             org.opencontainers.image.url=${{ steps.setup.outputs.image_name }}
 
@@ -246,14 +253,8 @@ jobs:
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ steps.setup.outputs.digests_path }}/${digest#sha256:}"
 
-          # Artifact names cannot contain '/'
-          IMAGE_NAME="${{ matrix.image }}"
-          SAFE_IMAGE_NAME="${IMAGE_NAME//\//-}"
-
           # Set digests name (used in the next step)
-          DIGESTS_NAME="digests-${SAFE_IMAGE_NAME}-"
-          DIGESTS_NAME+="${{ steps.setup.outputs.release_name }}-"
-          DIGESTS_NAME+="${{ steps.setup.outputs.arch_name }}"
+          DIGESTS_NAME="digests-${{ steps.setup.outputs.safe_filename }}"
           echo "$DIGESTS_NAME"
           echo "digests_name=$DIGESTS_NAME" >> "$GITHUB_OUTPUT"
 
@@ -283,32 +284,38 @@ jobs:
         id: setup
         run: |
 
+          # Set image
+          # IMAGE="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
+          IMAGE="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
+          IMAGE+="${{ matrix.image }}"
+          echo "$IMAGE"
+          echo "image_name=$IMAGE" >> "$GITHUB_OUTPUT"
+
           # Set OS release
           PARENT="${{ matrix.parent }}"
-          # Replace 'ubuntu:' with ''
-          RELEASE=${PARENT//ubuntu:/}
+          RELEASE="${PARENT##*:}"
           echo "$RELEASE"
           echo "release_name=$RELEASE" >> "$GITHUB_OUTPUT"
 
-          # Set image name
-          # IMG="${{ env.REGISTRY_HOST }}/${{ env.REPOSITORY_NAME }}/"
-          IMG="${{ env.REGISTRY_HOST }}/${{ env.OWNER_NAME }}/"
-          IMG+="${{ matrix.image }}"
-          echo "$IMG"
-          echo "image_name=$IMG" >> "$GITHUB_OUTPUT"
-
-          # Set safe image name (used in artifact names)
-          IMAGE="${{ matrix.image }}"
-          SAFE_IMAGE="${IMAGE//\//-}"
+          # Artifact names cannot contain '/' and/or ':'
+          SAFE_IMAGE="${{ matrix.image }}"
+          SAFE_IMAGE="${SAFE_IMAGE//\//-}"
+          echo "${SAFE_IMAGE}"
           echo "safe_image=$SAFE_IMAGE" >> "$GITHUB_OUTPUT"
 
+          SAFE_FOLDER="${{ matrix.image }}-${RELEASE}"
+          SAFE_FOLDER="${SAFE_FOLDER//\//-}"
+          SAFE_FOLDER="${SAFE_FOLDER//://-}"
+          echo "${SAFE_FOLDER}"
+          echo "safe_folder=$SAFE_FOLDER" >> "$GITHUB_OUTPUT"
+
           # Set digests path
-          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${SAFE_IMAGE}-${RELEASE}"
+          DIGESTS_PATH="${{ env.DIGESTS_PATH }}/${SAFE_FOLDER}"
           echo "$DIGESTS_PATH"
           echo "digests_path=$DIGESTS_PATH" >> "$GITHUB_OUTPUT"
 
           # Set digests pattern
-          DIGESTS_PATTERN="digests-${SAFE_IMAGE}-${RELEASE}"
+          DIGESTS_PATTERN="digests-${SAFE_FOLDER}"
           echo "$DIGESTS_PATTERN"
           echo "digests_pattern=$DIGESTS_PATTERN" >> "$GITHUB_OUTPUT"
 
@@ -387,7 +394,7 @@ jobs:
             org.opencontainers.image.title=${{ matrix.image }}
 
             org.opencontainers.image.description=A multi-platform/arch
-            image of the ${{ env.REPOSITORY_NAME }} project
+            image of the ${{ env.REPOSITORY }} project
 
             org.opencontainers.image.url=${{ steps.setup.outputs.image_name }}
 
