@@ -249,11 +249,14 @@ jobs:
           PACKAGES_URL+="packages/container/${ENCODED_PACKAGE}/versions"
           echo "$PACKAGES_URL"
 
-          if ! PACKAGES_JSON=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" ${PACKAGES_URL} || echo ""); then
-            echo "Unable to retrieve package versions"
-            exit 1
+          if ! PACKAGES_JSON=$(
+              gh api \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "${PACKAGES_URL}" 2>/dev/null
+          ); then
+              echo "Unable to retrieve package versions"
+              exit 1
           fi
           echo "$PACKAGES_JSON"
 
