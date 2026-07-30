@@ -117,8 +117,8 @@ sequenceDiagram
 
     Trivy-->>S: Generate trivy-<image>-<release>-<arch>-image-results.sarif
 
-    %% Optional upload step (currently commented out in workflow)
-    Note right of S: (Optional: Upload SARIF to GitHub Security tab<br>via github/codeql-action/upload-sarif)
+    S->>GitHub: Upload SARIF report
+    Note right of S: github/codeql-action/upload-sarif
 
     alt No critical/high issues found
         S-->>W: Job passes (all matrix combos)
@@ -131,7 +131,7 @@ sequenceDiagram
     S-->>W: Security scan complete
 ```
 
-> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) · Simplified for clarity, reflects current implementation_
+> **Workflow overview** – _Mermaid diagram generated with Grok (xAI) and ChatGPT · Simplified for clarity, reflects current implementation_
 
 ### [lint-images.yml](.github/workflows/lint-images.yml)
 
@@ -165,17 +165,18 @@ sequenceDiagram
 
     L->>GHCR: Pull specific platform image<br>docker pull --platform linux/arm64 (etc.)
 
-    L->>Dockle: Run Dockle on pulled image<br>• Checks CIS benchmarks + best practices<br>• Output: SARIF report<br>• Failure threshold: fatal only<br>• Respects .dockleignore
+    L->>Dockle: Run Dockle on pulled image<br>• Checks CIS benchmarks + best practices<br>• Output: SARIF report<br>• Failure threshold: fatal only<br>• Respects .dockleignore<br>• Optional accepted filenames
 
     Dockle-->>L: Generate dockle-<image>-<release>-<arch>-image-results.sarif
 
-    %% Upload step is currently commented out
-    Note right of L: (Optional: Upload SARIF to GitHub Security tab<br>via codeql-action/upload-sarif)
-
+    L->>GitHub: Upload SARIF report
+    using github/codeql-action/upload-sarif
+    
     alt No fatal issues found
         L-->>W: Job passes (all matrix variants)
     else One or more fatal findings
-        L-->>W: Job fails<br>(fail-fast: false → all platforms still checked)
+        L-->>W: Job fails
+        (fail-fast: false → all platforms still checked)
     end
 
     Note over L,Dockle: All published multi-platform images<br>validated against Docker/CIS best practices
@@ -264,8 +265,10 @@ sequenceDiagram
     GHCR-->>C: Untagged images removed
 
     %% Phase 2 – Unsupported tags
-    C->>GHCR: List all image tags<br>(crane ls)
-    C->>C: Compute deprecated tags<br>(all tags − keep-list)
+    C->>GHCR: List all image tags
+    (crane ls)
+    C->>C: Compute deprecated tags
+    (all tags − keep-list)
 
     alt Deprecated tags exist
         C->>GHCR: Query GitHub API for package version IDs
