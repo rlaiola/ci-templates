@@ -99,7 +99,9 @@ jobs:
           echo "arch_name=$ARCH" >> "$GITHUB_OUTPUT"
 
           # Set report name
-          REPORT="dockle-${{ matrix.image }}-$RELEASE-$ARCH-image-results"
+          REPORT="dockle-${{ matrix.image }}-${RELEASE}-${ARCH}-image-results"
+          REPORT="${REPORT//\//-}"
+          REPORT="${REPORT//:/-}"
           echo "$REPORT"
           echo "report_name=$REPORT" >> "$GITHUB_OUTPUT"
 
@@ -148,9 +150,8 @@ jobs:
       # Upload results to GitHub so they can be displayed in the repository
       # security tab
       # https://github.com/github/codeql-action
-      # -
-      #   name: Upload Dockle image lint results to GitHub Security tab
-      #   uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: '${{ steps.setup.outputs.report_name }}.sarif'
-      #     category: 'image'
+      - name: Upload Dockle image lint results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: '${{ steps.setup.outputs.report_name }}.sarif'
+          category: 'image'
