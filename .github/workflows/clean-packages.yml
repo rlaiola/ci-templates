@@ -242,7 +242,7 @@ jobs:
           # ENCODED_PACKAGE="${PACKAGE}/${{ matrix.image }}"
           ENCODED_PACKAGE="${{ matrix.image }}"
           # Replace '/' with '%2F'
-          # ENCODED_PACKAGE="${ENCODED_PACKAGE//\//\%2F}"
+          ENCODED_PACKAGE="${ENCODED_PACKAGE//\//\%2F}"
           echo "$ENCODED_PACKAGE"
 
           PACKAGES_URL="/users/${{ env.OWNER_NAME }}/"
